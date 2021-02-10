@@ -6,9 +6,6 @@ import 'package:toast/toast.dart';
 import 'package:badminators/loginPanel.dart';
 import 'package:http/http.dart' as http;
 
-String pathAsset = 'assets/images/profile.png';
-String urlUpload = "http://slumberjer.com/foodninja/php/register_user.php";
-
 class registerPanel extends StatefulWidget {
   @override
   _registerPanelState createState() => _registerPanelState();

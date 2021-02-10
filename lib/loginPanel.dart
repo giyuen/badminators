@@ -1,8 +1,14 @@
 import 'package:badminators/registerPanel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
+import 'package:http/http.dart' as http;
+import 'package:badminators/user.dart';
+
+import 'mainPanel.dart';
+
 
 class loginPanel extends StatefulWidget {
   @override
@@ -128,7 +134,60 @@ class _loginPanelState extends State<loginPanel> {
     );
   }
 
-  void _onLogin() {}
+  Future<void> _onLogin() async {
+    _email = _emailcontroller.text;
+    _pass = _passcontroller.text;
+    ProgressDialog pr = new ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+        message: '   Login...',
+        borderRadius: 20.0,
+        backgroundColor: Colors.black,
+        progressWidget: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Colors.white), strokeWidth: 5.0),
+        elevation: 10.0,
+        insetAnimCurve: Curves.easeInOut,
+        progress: 0.0,
+        maxProgress: 100.0,
+        messageTextStyle: TextStyle(
+            color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w600));
+    await pr.show();
+    http.post(
+        "https://joshuaooigy.com/badminators/php/login_user.php",
+        body: {
+          "email": _email,
+          "password": _pass,
+        }).then((res) {
+      print(res.body);
+      List userdata = res.body.split(",");
+      if (userdata[0] == "success") {
+        Toast.show(
+          "Login Successfully",
+          context,
+          duration: Toast.LENGTH_LONG,
+          gravity: Toast.BOTTOM,
+        );
+        User user = new User(
+            email: _email,
+            name: userdata[1],
+            password: _pass,
+            phone: userdata[2],
+            datereg: userdata[3]);
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (BuildContext context) => mainPanel(user: user)));
+      } else {
+        Toast.show(
+          "Login failed",
+          context,
+          duration: Toast.LENGTH_LONG,
+          gravity: Toast.BOTTOM,
+        );
+      }
+    }).catchError((err) {
+      print(err);
+    });
+    await pr.hide();
+  }
 
   void _onRegister() {
     Navigator.push(context,
